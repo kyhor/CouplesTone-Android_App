@@ -11,6 +11,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.drm.DrmStore;
 import android.location.Location;
@@ -33,6 +34,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.client.Firebase;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -70,10 +72,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String pastLocation = "";
     private Button partner;
     private String phoneget;
-    private String smsMsg;
+
+    private EditText myfireurl;
     private String partnerName;
     private View edit;
-
+    Firebase myfireref;
+    //private String smsMsg;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -85,21 +89,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, MY_PERMISSIONS_REQUEST_SEND_SMS);
-        }
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
+        // use the service to receive notification partner's arrive or leave fav location
+        Intent intent = new Intent (MapsActivity.this, NotificationService.class);
+        startService(intent);
         //  set up buttons and view adapter
         showList = (Button) findViewById(R.id.listButton);
         partner=(Button) findViewById(R.id.partner);
@@ -365,8 +361,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                             //checks for phone number
                             if (!phoneget.isEmpty()) {
-                                smsMsg = partnerName + " visits "+ i.getName();
-                                sendSMS(smsMsg, phoneget);
+                                //smsMsg = partnerName + " visits "+ i.getName();
+                               // sendSMS(smsMsg, phoneget);
+
+                                // when user arrive or leave loc, it will notify sever then to partner phones
+                                // send out the notification to database
+
+
                                 pastLocation = i.getName();
                             }
                         }
@@ -437,7 +438,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationManager.requestLocationUpdates(locationProvider, 0, 0, locationListener);
 
     }
-
+/*
     // send SMS to partner
     public void sendSMS(String message, String phoneNo){
         try {
@@ -450,6 +451,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             e.printStackTrace();
         }
     }
+    */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
