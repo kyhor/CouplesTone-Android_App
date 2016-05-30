@@ -1,7 +1,9 @@
 package com.example.khor_000.testapp;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.Toast;
 
@@ -12,7 +14,9 @@ import com.firebase.client.ValueEventListener;
 
 public class NotificationService extends Service {
 
-    Firebase myFirebaseRef;
+    Firebase partnerFirebaseRef;
+    String partnerName;
+
     public NotificationService() {
     }
 
@@ -20,7 +24,6 @@ public class NotificationService extends Service {
 
         int startId;
         public MyThread(int sd){
-
             startId = sd;
         }
         @Override
@@ -28,16 +31,16 @@ public class NotificationService extends Service {
 
             synchronized (this){
                 try{
-                    myFirebaseRef = new Firebase("https://alex-110student.firebaseio.com/student");
-                    //myFirebaseRef = new Firebase("https://alex-110student.firebaseio.com/student");
 
-                    myFirebaseRef.addValueEventListener(new ValueEventListener() {
+                    partnerFirebaseRef.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
 
-                            String msg = dataSnapshot.getValue(String.class);
+                            LocationItem tohistList = (LocationItem) dataSnapshot.getValue();
 
-                            Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
+
+
+                            Toast.makeText(getBaseContext(), "Partner visited " + tohistList.getName(), Toast.LENGTH_SHORT).show();
                         }
 
                         @Override
@@ -59,6 +62,12 @@ public class NotificationService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
         Toast.makeText(NotificationService.this, "Service Starts", Toast.LENGTH_SHORT).show();
+        partnerName= intent.getStringExtra("partnername");
+        // not included partner's fav loc list yet
+        partnerFirebaseRef = new Firebase("https://coupletonescse110.firebaseio.com/"+ partnerName);
+        if (partnerName == ""){
+            Toast.makeText(NotificationService.this, "no partner", Toast.LENGTH_SHORT).show();
+        }
         Thread thread = new Thread (new MyThread(startId));
         thread.start();
         return super.onStartCommand(intent, flags, startId);
