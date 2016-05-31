@@ -3,6 +3,7 @@ package com.example.khor_000.testapp;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.Toast;
@@ -15,7 +16,9 @@ import com.firebase.client.ValueEventListener;
 public class NotificationService extends Service {
 
     Firebase partnerFirebaseRef;
-    String partnerName;
+    private String partnerName;
+    private int locNum;
+
 
     public NotificationService() {
     }
@@ -35,12 +38,19 @@ public class NotificationService extends Service {
                     partnerFirebaseRef.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
+                            String locName = dataSnapshot.getValue(String.class);
+                            SharedPreferences sp = getSharedPreferences("LocatHistData", MODE_PRIVATE);
+                            locNum = sp.getInt("locNum", 0);
+                            locNum++;
+                            SharedPreferences.Editor editor = sp.edit();
+                            editor.putString("locName" + locNum, locName );
+                            editor.putInt("locNum", locNum);
+                            editor.apply();
 
-                            LocationItem tohistList = (LocationItem) dataSnapshot.getValue();
+                            // make notification in here as well
 
 
-
-                            Toast.makeText(getBaseContext(), "Partner visited " + tohistList.getName(), Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(getBaseContext(), "Partner visited " + tohistList.getName(), Toast.LENGTH_SHORT).show();
                         }
 
                         @Override
@@ -54,7 +64,7 @@ public class NotificationService extends Service {
                 catch(Exception e) /*(InterruptedException e)*/{
                     e.printStackTrace();
                 }
-                stopSelf(startId);
+                //stopSelf(startId);
             }
 
         }
@@ -62,12 +72,16 @@ public class NotificationService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
         Toast.makeText(NotificationService.this, "Service Starts", Toast.LENGTH_SHORT).show();
-        partnerName= intent.getStringExtra("partnername");
-        // not included partner's fav loc list yet
-        partnerFirebaseRef = new Firebase("https://coupletonescse110.firebaseio.com/"+ partnerName);
+        SharedPreferences sp = getSharedPreferences("usersInfo", MODE_PRIVATE);
+        partnerName = sp.getString("partner","");
+
         if (partnerName == ""){
             Toast.makeText(NotificationService.this, "no partner", Toast.LENGTH_SHORT).show();
+        } else{
+            Toast.makeText(NotificationService.this, "partner: "+ partnerName, Toast.LENGTH_SHORT).show();
         }
+
+        partnerFirebaseRef = new Firebase("https://coupletonescse110.firebaseio.com/"+ partnerName);
         Thread thread = new Thread (new MyThread(startId));
         thread.start();
         return super.onStartCommand(intent, flags, startId);

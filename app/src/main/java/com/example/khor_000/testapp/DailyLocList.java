@@ -1,6 +1,7 @@
 package com.example.khor_000.testapp;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,60 +19,24 @@ import java.util.List;
 public class DailyLocList extends Activity {
 
     private ListView listView;
-    private ArrayAdapter<LocationItem> arrayAdapter;
-    private List<LocationItem> myLocations;
-
-    // method to set object to listview
-    private class MyLocAdapter extends ArrayAdapter<LocationItem> {
-        public MyLocAdapter() {
-            super(DailyLocList.this, R.layout.single_location, myLocations);
-        }
-
-        public void add(LocationItem newLoc) {
-            super.add(newLoc);
-            super.notifyDataSetChanged();
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            //make sure we have view if null
-            View itemView = convertView;
-            if (itemView == null) {
-                itemView = getLayoutInflater().inflate(R.layout.single_location, parent, false);
-            }
-
-            //find the location to work with
-            LocationItem currLoc = myLocations.get(position);
-
-            //fill the view and location name
-            TextView makeText = (TextView) itemView.findViewById(R.id.locName);
-            makeText.setText(currLoc.getName());
-
-            //latitude
-            TextView latText = (TextView) itemView.findViewById(R.id.latTxt);
-            Double latVal = currLoc.getLatitude();
-            latVal = Double.parseDouble(new DecimalFormat("##.###").format(latVal));
-            latText.setText("LAT: " + latVal + "\t");
-
-            //longitude
-            TextView lngText = (TextView) itemView.findViewById(R.id.lngTxt);
-            Double lngVal = currLoc.getLatitude();
-            lngVal = Double.parseDouble(new DecimalFormat("##.###").format(lngVal));
-            lngText.setText("LON: " + lngVal);
-
-            return itemView;
-        }
-    };
+    private ArrayAdapter<String> arrayAdapter;
+    private List<String> myLocationsName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.partner_daily_loc_list);
         listView = (ListView) findViewById(R.id.histlist);
-        arrayAdapter = new MyLocAdapter();
-        myLocations =  new ArrayList<LocationItem>();
+        myLocationsName =  new ArrayList<String>();
+        SharedPreferences sp = getSharedPreferences("LocatHistData", MODE_PRIVATE);
+        int locNum = sp.getInt("locNum", 0);
+        for (int i = locNum; i >= 1; i--) {
+            String locVisited = sp.getString("locName" + locNum, "");
+            myLocationsName.add(locVisited);
+        }
+        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, myLocationsName);
+        listView.setAdapter(arrayAdapter);
 
      }
-
 
 }

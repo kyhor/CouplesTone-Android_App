@@ -12,6 +12,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.drm.DrmStore;
 import android.location.Location;
@@ -72,7 +73,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String pastLocation = "";
 
     // communicate data with service
-    private Intent service  = new Intent (MapsActivity.this, NotificationService.class);
+    private Intent service;
 
     private Button partner;
     private String myname = "";
@@ -91,7 +92,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
+        // start the firebase to use server
+        Firebase.setAndroidContext(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -99,6 +101,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // initialize my firebase sever
         myfireref = new Firebase("https://coupletonescse110.firebaseio.com/"+myname);
         // use the service to receive notification partner's arrive or leave fav location
+        //test
+        Toast.makeText(this, "no partner", Toast.LENGTH_SHORT).show();
+        service = new Intent (MapsActivity.this, NotificationService.class);
         service.putExtra("partnername", partnerName);
         startService(service);
         //  set up buttons and view adapter
@@ -286,7 +291,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         partnerName = partnameEdit.getText().toString();
                         myname = mynameEdit.getText().toString();
                         // to renew the partner insider the thread
-                        service.putExtra("partnername",partnerName);
+                        SharedPreferences sp = getSharedPreferences("usersInfo", MODE_PRIVATE );
+                        SharedPreferences.Editor editor = sp.edit();
+                        editor.putString("partner", partnerName);
+                        editor.putString("user", myname);
+                        editor.apply();
                         startService(service);
                         Log.v("V", myname);
 
@@ -367,12 +376,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                             //checks for phone number
                             if (!myname.isEmpty()) {
-                                //smsMsg = partnerName + " visits "+ i.getName();
-                               // sendSMS(smsMsg, phoneget);
-
                                 // when user arrive or leave loc, it will notify sever then to partner phones
                                 // send out the notification to database
-                                myfireref.setValue(i);
+                                myfireref.setValue(i.getName());
 
                                 pastLocation = i.getName();
                             }
