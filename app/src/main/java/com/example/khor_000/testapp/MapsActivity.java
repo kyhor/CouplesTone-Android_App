@@ -244,6 +244,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    public void goHistList(View view){
+
+        Intent i = new Intent(this, DailyLocList.class);
+
+        this.startActivity(i);
+    }
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.

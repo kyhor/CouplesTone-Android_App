@@ -56,7 +56,12 @@
         <service
             android:name=".NotificationService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true">
+        </service>
+
+        <activity android:name=".DailyLocList">
+        </activity>
+
     </application>
 
 </manifest>
